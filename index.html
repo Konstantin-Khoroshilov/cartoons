@@ -1,0 +1,100 @@
+<html>
+<head>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    .player-container {
+      height:100vh;
+      width: 100vw;
+    }
+    .player {
+      height:100%;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+</body>
+<script>
+  const storedIndex = JSON.parse(localStorage.getItem('currentVideoIndex'));
+  let currentVideoIndex = storedIndex ? +storedIndex : 0;
+  //если вносишь изменения в список мультиков, удаляй из localStorage currentVideoIndex
+  const chan = ['b8ff6309fafa356c5dcf1516bc79e87d', 'chan1', 'chan2', 'chan3', 'chan4', 'chan5', 'chan6', 'chan7', 'chan8', 'chan9'];
+  const witch = ['witch0', 'witch1', 'witch2', 'witch3', 'witch4', 'witch5', 'witch6'];
+  const beavers = ['beavers0', 'beavers1', 'beavers2', 'beavers3', 'beavers4', 'beavers5', 'beavers6'];
+  const cartoons = [chan, witch, beavers];
+  let longestCartoonLength = 0;
+  cartoons.forEach(cartoon => {
+    if(cartoon.length > longestCartoonLength) {
+      longestCartoonLength = cartoon.length;
+    }
+  });
+
+  const playlist = [];
+  for(let i = 0; i < longestCartoonLength; i++) {
+    cartoons.forEach(cartoon => {
+      if(cartoon[i]) { playlist.push(cartoon[i]) }
+    });
+  }  
+  const playerContainer = document.createElement('div');
+  playerContainer.className = 'player-container';
+  const player = document.createElement('iframe');
+  player.className = 'player';
+  player.setAttribute('id', 'my-player');
+  player.setAttribute('frameborder', '0');
+  player.setAttribute('webkitAllowFullScreen', '');
+  player.setAttribute('mozallowfullscreen', '');
+  player.setAttribute('allowfullscreen', '');
+  player.setAttribute('allow', 'clipboard-write; autoplay');
+  player.src = `https://rutube.ru/play/embed/${playlist[currentVideoIndex]}`;
+  playerContainer.append(player);
+  document.body.prepend(playerContainer);
+  function doCommand(CommandJSON) {
+    player.contentWindow.postMessage(JSON.stringify(CommandJSON), '*');
+  }
+
+  function do_play() { doCommand({ type: 'player:play', data: { isFullscreen: true } }); }
+  function do_pause() { doCommand({ type: 'player:pause', data: {} }); }
+  function do_stop() { doCommand({ type: 'player:stop', data: {} }); }
+  function do_setCurrentTime() { doCommand({ type: 'player:setCurrentTime', data: { time: 60 } }); }
+  function do_relativelySeekRight() { doCommand({ type: 'player:relativelySeek', data: { time: 60 } }); }
+  function do_relativelySeekLeft() { doCommand({ type: 'player:relativelySeek', data: { time: -60 } }); }
+  function do_changeVideo() { doCommand({ type: 'player:changeVideo', data: { id: '33ad68e44dde6b3453ae4beaeaaf4c29' } }); }
+  function do_setSkinColor() { doCommand({ type: 'player:setSkinColor', data: { color: 'FF00FF' } }); }
+  function do_mute() { doCommand({ type: 'player:mute', data: {} }); }
+  function do_unMute() { doCommand({ type: 'player:unMute', data: {} }); }
+  function do_VolumeMid() { doCommand({ type: 'player:setVolume', data: { volume: 0.5 } }); }
+  function do_VolumeUp() { doCommand({ type: 'player:setVolume', data: { change: 0.1 } }); }
+  function do_VolumeDown() { doCommand({ type: 'player:setVolume', data: { change: -0.1 } }); }
+
+  window.addEventListener("message", (event) => {
+    if (event.data) {
+      try {
+        const data = JSON.parse(event.data);
+        ev_type = data.type;
+        ev_data = data.data;
+      }
+      catch (err) {
+        ev_type = 'JSON invalid';
+      };
+      if (ev_type == 'player:ready') {
+        do_play()
+      }
+
+      if (ev_type == 'player:changeState' && ev_data.state == 'stopped') {
+        if(currentVideoIndex !== playlist.length - 1) {
+          currentVideoIndex++;
+        } else {
+	  currentVideoIndex = 0;
+        }
+        localStorage.setItem('currentVideoIndex', '' + currentVideoIndex);
+        player.src = `https://rutube.ru/play/embed/${playlist[currentVideoIndex]}`;
+        do_play();
+      }
+    }
+  })
+</script>
+</html>
