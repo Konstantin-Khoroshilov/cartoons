@@ -600,15 +600,24 @@
       const seasonOption = document.createElement('option');
       seasonOption.value = index + 1 + '';
       seasonOption.text = index + 1 + '';
-      selectSeason.textContent = '';
       selectSeason.append(seasonOption);
-    });
-    cartoon.episodes.forEach((episode, index) => {
-      const episodeOption = document.createElement('option');
-      episodeOption.value = index + 1 + '';
-      episodeOption.text = index + 1 + '';
-      selectEpisode.textContent = '';
-      selectEpisode.append(episodeOption);
+      selectSeason.addEventListener('change', () => {
+        selectEpisode.textContent = '';
+        for (let i = 1; i <= cartoon.seasons[+selectSeason.value - 1]; i++) {
+          const episodeOption = document.createElement('option');
+          episodeOption.value = i + '';
+          episodeOption.text = i + '';
+          selectEpisode.append(episodeOption);
+        }
+      });
+      if (index === 0) {
+        for (let i = 1; i <= season; i++) {
+          const episodeOption = document.createElement('option');
+          episodeOption.value = i + '';
+          episodeOption.text = i + '';
+          selectEpisode.append(episodeOption);
+        }
+      }
     });
   }
 
@@ -621,16 +630,18 @@
 
   fillSelect(cartoons[0]);
 
+  selectCartoon.addEventListener('change', () => {
+    selectSeason.innerHTML = ''
+    selectEpisode.innerHTML = '';
+    const cartoon = cartoons.find(cartoon => cartoon.name === selectCartoon.value);
+    fillSelect(cartoon);
+  });
+
   cartoons.forEach(cartoon => {
     const nameOption = document.createElement('option');
     nameOption.value = cartoon.name;
     nameOption.text = cartoon.name;
     selectCartoon.append(nameOption);
-  });
-
-  selectCartoon.addEventListener('change', () => {
-    const cartoon = cartoons.find(cartoon => cartoon.name = selectCartoon.value);
-    fillSelect(cartoon);
   });
 
   playlist.forEach((episode, index) => {
@@ -645,6 +656,7 @@
     const nameElem = document.createElement('p');
     nameElem.className = 'cartoon__name';
     nameElem.textContent = episode.cartoonName;
+    listItem.title = episode.cartoonName;
     listItem.append(nameElem);
     const episodeElem = document.createElement('p');
     episodeElem.className = 'cartoon__episode-number';
