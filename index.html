@@ -1,46 +1,197 @@
 <html>
-<head>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-    }
-    .player-container {
-      height:100vh;
-      width: 100vw;
-    }
-    .player {
-      height:100%;
-      width: 100%;
-    }
-  </style>
-</head>
-<body>
 
+<head>
+  <title>Cartoons</title>
+  <link rel="icon" type="image/x-icon" href="./assets/favicon.svg">
+  <link rel="stylesheet" href="./index.css">
+</head>
+
+<body>
+  <div class="modal-window">
+    <div class="playlist-container">
+      <ul class="playlist list"></ul>
+      <div class="control-panel">
+        <div class="select-container">
+          <label class="select-label select-label_type_name">
+            Название
+            <select class="select-cartoon" name="" id=""></select>
+          </label>
+          <label class="select-label select-label_type_season">
+            Сезон
+            <select class="select-season" name="" id=""></select>
+          </label>
+          <label class="select-label select-label_type_episode">
+            Серия
+            <select class="select-episode" name="" id=""></select>
+          </label>
+        </div>
+        <div class="controls-contaier">
+          <button class="button button_type_to-beginning" type="button"></button>
+          <button class="button button_type_prev" type="button"></button>
+          <button class="button button_type_play" type="button"></button>
+          <button class="button button_type_next" type="button"></button>
+          <button class="button button_type_to-end" type="button"></button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 <script>
-  const storedIndex = JSON.parse(localStorage.getItem('currentVideoIndex'));
-  let currentVideoIndex = storedIndex ? +storedIndex : 0;
-  //если вносишь изменения в список мультиков, удаляй из localStorage currentVideoIndex
-  const chan = ['b8ff6309fafa356c5dcf1516bc79e87d', 'chan1', 'chan2', 'chan3', 'chan4', 'chan5', 'chan6', 'chan7', 'chan8', 'chan9'];
-  const witch = ['edea11e4ba3ce74e18d42bb1b3eb6147', 'witch1', 'witch2', 'witch3', 'witch4', 'witch5', 'witch6'];
-  const beavers = ['d1c62e58ff683653dcceca26f0ba6b9a', 'beavers1', 'beavers2', 'beavers3', 'beavers4', 'beavers5', 'beavers6'];
-  const tuten = ['fc4144b75c6ce5f83800c096277265f3'];
-  const kim = ['c7fd158d9af2828a27dbf473a84964d3'];
-  const cartoons = [chan, witch, beavers];
+  const selectCartoon = document.querySelector('.select-cartoon');
+  const selectSeason = document.querySelector('.select-season');
+  const selectEpisode = document.querySelector('.select-episode');
+  const playlistEl = document.querySelector('.playlist');
+  const toBegButton = document.querySelector('.button_type_to-beginning');
+  const prevButton = document.querySelector('.button_type_prev');
+  const playButton = document.querySelector('.button_type_play');
+  const nextButton = document.querySelector('.button_type_next');
+  const toEndButton = document.querySelector('.button_type_to-end');
+  const playEvt = new Event('play');
+  const playlist = [];
   let longestCartoonLength = 0;
+
+  const chan = {
+    cover: './assets/chan.webp',
+    name: 'Приключения Джеки Чана',
+    seasons: [1],
+    episodes: [{
+      season: '1',
+      episode: '1',
+      url: 'b8ff6309fafa356c5dcf1516bc79e87d',
+    }],
+  };
+
+  const witch = {
+    cover: './assets/witch.jpg',
+    name: 'Чародейки',
+    seasons: [1],
+    episodes: [{
+      season: '1',
+      episode: '1',
+      url: 'edea11e4ba3ce74e18d42bb1b3eb6147',
+    }],
+  };
+
+  const beavers = {
+    cover: './assets/beavers.webp',
+    name: 'Крутые бобры',
+    seasons: [1],
+    episodes: [{
+      season: '1',
+      episode: '1',
+      url: 'd1c62e58ff683653dcceca26f0ba6b9a',
+    }],
+  };
+
+  const tuten = {
+    cover: './assets/tutenstein.jpg',
+    name: 'Тутенштейн',
+    seasons: [1],
+    episodes: [{
+      season: '1',
+      episode: '1',
+      url: 'fc4144b75c6ce5f83800c096277265f3',
+    }],
+  };
+
+  const kim = {
+    cover: './assets/kim.jpg',
+    name: 'Ким Пять-с-плюсом',
+    seasons: [1],
+    episodes: [{
+      season: '1',
+      episode: '1',
+      url: 'c7fd158d9af2828a27dbf473a84964d3',
+    }],
+  };
+
+
+
+  const cartoons = [chan, witch, beavers, tuten, kim];
   cartoons.forEach(cartoon => {
-    if(cartoon.length > longestCartoonLength) {
-      longestCartoonLength = cartoon.length;
+    if (cartoon.episodes.length > longestCartoonLength) {
+      longestCartoonLength = cartoon.episodes.length;
     }
   });
-
-  const playlist = [];
-  for(let i = 0; i < longestCartoonLength; i++) {
+  for (let i = 0; i < longestCartoonLength; i++) {
     cartoons.forEach(cartoon => {
-      if(cartoon[i]) { playlist.push(cartoon[i]) }
+      if (cartoon.episodes[i]) { playlist.push(cartoon.episodes[i]) }
     });
-  }  
+  }
+  let currentEpisode = playlist[0];
+  const storedIndex = JSON.parse(localStorage.getItem('currentVideoIndex'));
+  let currentVideoIndex = storedIndex ? +storedIndex : 0;
+
+  const fillSelect = (cartoon) => {
+    cartoon.seasons.forEach((season, index) => {
+      const seasonOption = document.createElement('option');
+      seasonOption.value = index + 1 + '';
+      seasonOption.text = index + 1 + '';
+      selectSeason.textContent = '';
+      selectSeason.append(seasonOption);
+    });
+    cartoon.episodes.forEach((episode, index) => {
+      const episodeOption = document.createElement('option');
+      episodeOption.value = index + 1 + '';
+      episodeOption.text = index + 1 + '';
+      selectEpisode.textContent = '';
+      selectEpisode.append(episodeOption);
+    });
+  }
+
+  cartoons.forEach(cartoon => {
+    cartoon.episodes.forEach(episode => {
+      episode.cartoonName = cartoon.name;
+      episode.cartoonCover = cartoon.cover;
+    })
+  });
+
+  fillSelect(cartoons[0]);
+
+  cartoons.forEach(cartoon => {
+    const nameOption = document.createElement('option');
+    nameOption.value = cartoon.name;
+    nameOption.text = cartoon.name;
+    selectCartoon.append(nameOption);
+  });
+
+  selectCartoon.addEventListener('change', () => {
+    const cartoon = cartoons.find(cartoon => cartoon.name = selectCartoon.value);
+    fillSelect(cartoon);
+  });
+
+  playlist.forEach((episode, index) => {
+    const listItem = document.createElement('li');
+    listItem.className = 'cartoon list__item';
+    if (index === currentVideoIndex) { listItem.classList.add('list__item_active') }
+    const cover = document.createElement('img');
+    cover.className = 'cartoon__cover';
+    cover.alt = `обложка мультика ${episode.cartoonName}`;
+    cover.src = episode.cartoonCover;
+    listItem.append(cover);
+    const nameElem = document.createElement('p');
+    nameElem.className = 'cartoon__name';
+    nameElem.textContent = episode.cartoonName;
+    listItem.append(nameElem);
+    const episodeElem = document.createElement('p');
+    episodeElem.className = 'cartoon__episode-number';
+    episodeElem.textContent = `Сезон ${episode.season}, серия ${episode.episode}`;
+    listItem.append(episodeElem);
+    playlistEl.append(listItem);
+    listItem.addEventListener('play', () => {
+      if (currentEpisode === episode) {
+        document.querySelector('.list__item_active').classList.remove('list__item_active');
+        listItem.classList.add('list__item_active');
+      }
+    });
+    listItem.addEventListener('click', () => {
+      if (currentVideoIndex !== index) {
+        currentVideoIndex = index;
+        play();
+      }
+    });
+  });
+
   const playerContainer = document.createElement('div');
   playerContainer.className = 'player-container';
   const player = document.createElement('iframe');
@@ -51,11 +202,55 @@
   player.setAttribute('mozallowfullscreen', '');
   player.setAttribute('allowfullscreen', '');
   player.setAttribute('allow', 'clipboard-write; autoplay');
-  player.src = `https://rutube.ru/play/embed/${playlist[currentVideoIndex]}`;
+  player.src = `https://rutube.ru/play/embed/${playlist[currentVideoIndex].url}`;
   playerContainer.append(player);
   document.body.prepend(playerContainer);
+
   function doCommand(CommandJSON) {
     player.contentWindow.postMessage(JSON.stringify(CommandJSON), '*');
+  }
+
+  const play = () => {
+    localStorage.setItem('currentVideoIndex', '' + currentVideoIndex);
+    currentEpisode = playlist[currentVideoIndex];
+    document.querySelectorAll('.list__item').forEach(elem => {
+      elem.dispatchEvent(playEvt);
+    });
+    player.src = `https://rutube.ru/play/embed/${playlist[currentVideoIndex].url}`;
+    do_play();
+  }
+
+  const playNext = () => {
+    if (currentVideoIndex !== playlist.length - 1) {
+      currentVideoIndex++;
+    } else {
+      currentVideoIndex = 0;
+    }
+    play();
+  }
+
+  const playPrev = () => {
+    if (currentVideoIndex !== 0) {
+      currentVideoIndex--;
+    } else {
+      currentVideoIndex = playlist.length - 1;
+    }
+    play();
+  }
+
+  const playFirst = () => {
+    currentVideoIndex = 0;
+    play();
+  }
+
+  const playLast = () => {
+    currentVideoIndex = playlist.length - 1;
+    play();
+  }
+
+  const playIndex = (index) => {
+    currentVideoIndex = index;
+    play();
   }
 
   function do_play() { doCommand({ type: 'player:play', data: { isFullscreen: true } }); }
@@ -87,16 +282,27 @@
       }
 
       if (ev_type == 'player:changeState' && ev_data.state == 'stopped') {
-        if(currentVideoIndex !== playlist.length - 1) {
-          currentVideoIndex++;
-        } else {
-	  currentVideoIndex = 0;
-        }
-        localStorage.setItem('currentVideoIndex', '' + currentVideoIndex);
-        player.src = `https://rutube.ru/play/embed/${playlist[currentVideoIndex]}`;
-        do_play();
+        playNext();
       }
     }
-  })
+  });
+  
+  toBegButton.addEventListener('click', playFirst);
+  prevButton.addEventListener('click', playPrev);
+  playButton.addEventListener('click', () => {
+    const resIndex = playlist.findIndex((episode, index, array) => {
+      return episode.cartoonName === selectCartoon.value && episode.season === selectSeason.value && episode.episode === selectEpisode.value;
+    });
+    if (resIndex === -1) {
+      currentVideoIndex = 0;
+      play();
+    } else {
+      currentVideoIndex = resIndex;
+      play();
+    }
+  });
+  nextButton.addEventListener('click', playNext);
+  toEndButton.addEventListener('click', playLast);
 </script>
+
 </html>
